@@ -13,7 +13,7 @@ async function run(name) {
     try {
         await client.connect();
         const database = client.db("dogBreedFinder");
-        const breeds = database.collection("breeds");
+        const breeds = database.collection("dogBreeds");
         return await breeds.findOne({ name: name });
     } finally {
         await client.close();
