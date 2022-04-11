@@ -9,30 +9,48 @@ const { MongoClient } = require("mongodb");
 const key = require("./config/key");
 const client = new MongoClient(key.mongoURI);
 
-async function run(name) {
+async function getData() {
     try {
         await client.connect();
-        const database = client.db("dogBreedFinder");
-        const breeds = database.collection("dogBreeds");
-        return await breeds.findOne({ name: name });
-    } finally {
-        await client.close();
+        return client.db("dogBreedFinder").collection("dogBreeds");
+    } catch (err) {
+        console.error(err.message);
     }
 }
-
 
 app.get("/api/", (req, res) => {
     res.send("Hello World.");
 });
 
-
-app.get("/api/breeds", (req, res) => {
-    const name = req.query.name;
-    run(name)
-        .then((breed) => {return res.status(200).send(breed)})
-        .catch(console.dir);
+app.get("/api/all", (req, res) => {
+    getData()
+        .then((data) => {
+            return data.find().toArray();
+        })
+        .then((breeds) => {
+            client.close();
+            return res.send(breeds);
+        })
+        .catch((err) => {
+            res.status(500).send("Something wrong with getting data.");
+        });
 });
 
+app.get("/api/breeds", (req, res) => {
+    getData()
+        .then((data) => {
+            return data.findOne({ name: req.query.name });
+        })
+        .then((breed) => {
+            client.close();
+            if (breed === null)
+                return res.status(500).send("No data matches the name.");
+            return res.send(breed);
+        })
+        .catch((err) => {
+            res.status(500).send("Something wrong with getting data.");
+        });
+});
 
 // listening
 app.listen(port, () => {
