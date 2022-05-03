@@ -18,8 +18,9 @@ async function getData() {
     }
 }
 
-app.get("/api/", (req, res) => {
-    res.send("Hello World.");
+
+app.get("/", (req, res) => {
+    res.send("Dog Breed Finder DB Server is running.");
 });
 
 app.get("/api/all", (req, res) => {
